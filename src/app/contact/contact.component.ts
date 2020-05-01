@@ -11,7 +11,7 @@ export class ContactComponent implements OnInit {
   feedbackForm: FormGroup;
   feedback: Feedback;
   contactType = ContactType;
-  @ViewChild('fform') feedbackFormDiretive;
+  @ViewChild('fform') feedbackFormDirective;
   formErrors = {
     firstname: '',
     lastname: '',
@@ -111,6 +111,6 @@ export class ContactComponent implements OnInit {
       contacttype: 'None',
       message: '',
     });
-    this.feedbackFormDiretive.resetForm();
+    this.feedbackFormDirective.resetForm();
   }
 }
