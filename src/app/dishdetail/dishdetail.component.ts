@@ -14,6 +14,7 @@ import { Comment } from '../shared/comment';
 })
 export class DishdetailComponent implements OnInit {
   dish: Dish;
+  errMessage: string;
   dishIds: string[];
   prev: string;
   next: string;
@@ -54,10 +55,13 @@ export class DishdetailComponent implements OnInit {
       .pipe(
         switchMap((params: Params) => this.dishService.getDish(params['id']))
       )
-      .subscribe((dish) => {
-        this.dish = dish;
-        this.setPrevNext(dish.id);
-      });
+      .subscribe(
+        (dish) => {
+          this.dish = dish;
+          this.setPrevNext(dish.id);
+        },
+        (errmessage) => (this.errMessage = <any>errmessage)
+      );
   }
 
   setPrevNext(dishId: string) {
