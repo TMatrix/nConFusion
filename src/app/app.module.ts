@@ -17,6 +17,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 
@@ -36,6 +37,8 @@ import { LeaderService } from './services/leader.service';
 
 import { AppRoutingModule } from './app-routing/app-routing.module';
 
+import { baseURL } from './shared/baseurl';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -54,6 +57,7 @@ import { AppRoutingModule } from './app-routing/app-routing.module';
     FlexLayoutModule,
     FormsModule,
     ReactiveFormsModule,
+    HttpClientModule,
     AppRoutingModule,
     MatToolbarModule,
     MatListModule,
@@ -69,7 +73,12 @@ import { AppRoutingModule } from './app-routing/app-routing.module';
     MatProgressSpinnerModule,
     MatSliderModule,
   ],
-  providers: [DishService, PromotionService, LeaderService],
+  providers: [
+    DishService,
+    PromotionService,
+    LeaderService,
+    { provide: 'BaseURL', useValue: baseURL },
+  ],
   entryComponents: [LoginComponent],
   bootstrap: [AppComponent],
 })
