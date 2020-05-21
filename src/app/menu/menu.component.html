@@ -10,7 +10,7 @@
     <mat-grid-list cols="2" rowHeight="200px">
       <mat-grid-tile
         *ngFor="let dish of dishes"
-        [routerLink]="['/dishdetail', dish.id]"
+        [routerLink]="['/dishdetail', dish._id]"
         appHighlight
       >
         <img

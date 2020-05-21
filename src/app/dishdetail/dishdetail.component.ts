@@ -1,17 +1,21 @@
 import { Component, OnInit, ViewChild, Inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { visibility, flyInOut, expand } from '../animations/app.animation';
+import { Dish } from '../shared/dish';
+import { Comment } from '../shared/comment';
+import { DishService } from '../services/dish.service';
+import { FavoriteService } from '../services/favorite.service';
+
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-import { Dish } from '../shared/dish';
-import { DishService } from '../services/dish.service';
+
 import { switchMap } from 'rxjs/operators';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Comment } from '../shared/comment';
-import { visibility, flyInOut, expand } from '../animations/app.animation';
 
 @Component({
   selector: 'app-dishdetail',
   templateUrl: './dishdetail.component.html',
   styleUrls: ['./dishdetail.component.scss'],
+  // tslint:disable-next-line:use-host-property-decorator
   host: {
     '[@flyInOut]': 'true',
     style: 'display: block;',
@@ -19,61 +23,65 @@ import { visibility, flyInOut, expand } from '../animations/app.animation';
   animations: [visibility(), flyInOut(), expand()],
 })
 export class DishdetailComponent implements OnInit {
+  @ViewChild('cform') commentFormDirective;
   dish: Dish;
-  errMessage: string;
+  dishcopy: Dish;
   dishIds: string[];
   prev: string;
   next: string;
-  commentForm: FormGroup;
   comment: Comment;
-  @ViewChild('cform') commentFormDirective;
-  dishcopy: Dish;
+  errMess: string;
   visibility = 'shown';
+  favorite = false;
 
   formErrors = {
-    author: '',
     comment: '',
   };
 
   validationMessages = {
-    author: {
-      required: 'Author name is required.',
-      minlength: 'Author name must be at least 2 characters long',
-    },
     comment: {
       required: 'Comment is required.',
     },
   };
 
+  commentForm: FormGroup;
+
   constructor(
-    private dishService: DishService,
-    private location: Location,
+    private dishservice: DishService,
+    private favoriteService: FavoriteService,
     private route: ActivatedRoute,
+    private location: Location,
     private fb: FormBuilder,
     @Inject('BaseURL') public baseURL
-  ) {
-    this.createForm();
-  }
+  ) {}
 
-  ngOnInit(): void {
-    this.dishService
+  ngOnInit() {
+    this.createForm();
+
+    this.dishservice
       .getDishIds()
       .subscribe((dishIds) => (this.dishIds = dishIds));
     this.route.params
       .pipe(
         switchMap((params: Params) => {
           this.visibility = 'hidden';
-          return this.dishService.getDish(params['id']);
+          return this.dishservice.getDish(params['id']);
         })
       )
       .subscribe(
         (dish) => {
           this.dish = dish;
-          this.dishcopy = dish;
-          this.setPrevNext(dish.id);
+          this.setPrevNext(dish._id);
           this.visibility = 'shown';
+          this.favoriteService.isFavorite(this.dish._id).subscribe(
+            (resp) => {
+              console.log(resp);
+              this.favorite = <boolean>resp.exists;
+            },
+            (err) => console.log(err)
+          );
         },
-        (errmessage) => (this.errMessage = <any>errmessage)
+        (errmess) => (this.errMess = <any>errmess)
       );
   }
 
@@ -93,7 +101,6 @@ export class DishdetailComponent implements OnInit {
 
   createForm() {
     this.commentForm = this.fb.group({
-      author: ['', [Validators.required, Validators.minLength(2)]],
       rating: 5,
       comment: ['', Validators.required],
     });
@@ -102,7 +109,18 @@ export class DishdetailComponent implements OnInit {
       this.onValueChanged(data)
     );
 
-    this.onValueChanged();
+    this.onValueChanged(); // (re)set validation messages now
+  }
+
+  onSubmit() {
+    this.dishservice
+      .postComment(this.dish._id, this.commentForm.value)
+      .subscribe((dish) => (this.dish = <Dish>dish));
+    this.commentFormDirective.resetForm();
+    this.commentForm.reset({
+      rating: 5,
+      comment: '',
+    });
   }
 
   onValueChanged(data?: any) {
@@ -112,6 +130,7 @@ export class DishdetailComponent implements OnInit {
     const form = this.commentForm;
     for (const field in this.formErrors) {
       if (this.formErrors.hasOwnProperty(field)) {
+        // clear previous error message (if any)
         this.formErrors[field] = '';
         const control = form.get(field);
         if (control && control.dirty && !control.valid) {
@@ -126,28 +145,14 @@ export class DishdetailComponent implements OnInit {
     }
   }
 
-  onSubmit() {
-    this.comment = {
-      ...this.commentForm.value,
-      date: new Date().toISOString(),
-    };
-    this.dishcopy.comments.push(this.comment);
-    this.dishService.putDish(this.dishcopy).subscribe(
-      (dish) => {
-        this.dish = dish;
-        this.dishcopy = dish;
-      },
-      (errmess) => {
-        this.dish = null;
-        this.dishcopy = null;
-        this.errMessage = <any>errmess;
-      }
-    );
-    this.commentForm.reset({
-      author: '',
-      rating: 5,
-      comment: '',
-    });
-    this.commentFormDirective.resetForm({ rating: 5 });
+  addToFavorites() {
+    if (!this.favorite) {
+      this.favoriteService
+        .postFavorite(this.dish._id)
+        .subscribe((favorites) => {
+          console.log(favorites);
+          this.favorite = true;
+        });
+    }
   }
 }

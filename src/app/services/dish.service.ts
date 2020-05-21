@@ -36,7 +36,7 @@ export class DishService {
 
   getDishIds(): Observable<string | any> {
     return this.getDishes()
-      .pipe(map((dishes) => dishes.map((dish) => dish.id)))
+      .pipe(map((dishes) => dishes.map((dish) => dish._id)))
       .pipe(catchError((error) => error));
   }
 
@@ -48,7 +48,13 @@ export class DishService {
     };
 
     return this.http
-      .put<Dish>(baseURL + 'dishes/' + dish.id, dish, httpOptions)
+      .put<Dish>(baseURL + 'dishes/' + dish._id, dish, httpOptions)
+      .pipe(catchError(this.processHttpMsgService.handleError));
+  }
+
+  postComment(dishId: string, comment: any) {
+    return this.http
+      .post(baseURL + 'dishes/' + dishId + '/comments', comment)
       .pipe(catchError(this.processHttpMsgService.handleError));
   }
 }

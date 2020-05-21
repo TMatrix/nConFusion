@@ -21,7 +21,7 @@ export class FavoritesComponent implements OnInit {
 
   constructor(
     private favoriteService: FavoriteService,
-    @Inject('baseURL') public baseURL
+    @Inject('BaseURL') public baseURL
   ) {}
 
   ngOnInit() {
