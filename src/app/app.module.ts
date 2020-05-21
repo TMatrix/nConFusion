@@ -40,6 +40,7 @@ import { AppRoutingModule } from './app-routing/app-routing.module';
 
 import { baseURL } from './shared/baseurl';
 import { HighlightDirective } from './directives/highlight.directive';
+import { FavoritesComponent } from './favorites/favorites.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { HighlightDirective } from './directives/highlight.directive';
     ContactComponent,
     LoginComponent,
     HighlightDirective,
+    FavoritesComponent,
   ],
   imports: [
     BrowserModule,
