@@ -30,17 +30,25 @@ import { HomeComponent } from './home/home.component';
 import { AboutComponent } from './about/about.component';
 import { ContactComponent } from './contact/contact.component';
 import { LoginComponent } from './login/login.component';
+import { FavoritesComponent } from './favorites/favorites.component';
 
 import { DishService } from './services/dish.service';
 import { PromotionService } from './services/promotion.service';
 import { LeaderService } from './services/leader.service';
 import { ProcessHTTPMsgService } from './services/process-httpmsg.service';
+import { AuthService } from './services/auth.service';
+import { AuthGuard } from './services/auth.guard';
+import {
+  AuthInterceptor,
+  UnauthorizedInterceptor,
+} from './services/auth.interceptor';
+import { FavoriteService } from './services/favorite.service';
 
 import { AppRoutingModule } from './app-routing/app-routing.module';
 
 import { baseURL } from './shared/baseurl';
 import { HighlightDirective } from './directives/highlight.directive';
-import { FavoritesComponent } from './favorites/favorites.component';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -84,6 +92,19 @@ import { FavoritesComponent } from './favorites/favorites.component';
     LeaderService,
     ProcessHTTPMsgService,
     { provide: 'BaseURL', useValue: baseURL },
+    AuthService,
+    AuthGuard,
+    FavoriteService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: UnauthorizedInterceptor,
+      multi: true,
+    },
   ],
   entryComponents: [LoginComponent],
   bootstrap: [AppComponent],
